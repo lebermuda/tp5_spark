@@ -8,17 +8,13 @@ def lire_data(filename):
     return(data_dict)
 
 def initialize_L(data):
-    L=[]
     n=len(data)
+    L=[[ 0 for j in range(n)] for i in range(n)]
     for i in range(n):
-        Li=[]
         k_connection=len(data[i]["neighbors"])
         for j in range(n):
             if j in data[i]["neighbors"] :
-                Li.append(1/k_connection)
-            else :
-                Li.append(0)
-        L.append(Li)
+                L[j][i]=1/k_connection
     return L
 
 def sequential_pageRank(filename,iteration,d):
@@ -29,7 +25,7 @@ def sequential_pageRank(filename,iteration,d):
     r = [1 / n for i in range(n)]
 
     k=0
-    while (k<2) :
+    while (k<iteration) :
         r=np.dot(L,r)*d+(1-d)/n
         k+=1
 

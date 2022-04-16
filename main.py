@@ -1,5 +1,5 @@
 #GIF-7104 tp5_spark
-import parallel
+# import parallel
 import sequential
 import time
 
@@ -18,10 +18,10 @@ if __name__ == '__main__':
     print("Time Seq : ",time_seq_end-time_seq_start," s")
 
     #PageRank Parallel
-    time_par_start = time.time()
-    res_par = parallel.parallel_pageRange(filename)
-    time_par_end = time.time()
-    print(res_par)
+    # time_par_start = time.time()
+    # res_par = parallel.parallel_pageRange(filename)
+    # time_par_end = time.time()
+    # print(res_par)
     #print("Time Seq : ", time_par_end - time_par_start, " s")
 
 
