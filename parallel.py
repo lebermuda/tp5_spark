@@ -1,10 +1,19 @@
 #Page Rank sequential version
+
+#https://cocalc.com/share/public_paths/960fae18301f8e8cb29472dc3ff5d0acf5659ec8/data-analysis%2Fspark-pagerank.ipynb
+
+
 import json
 import numpy as np
 
 import pyspark
 from pyspark import SparkContext
+from operator import add
 
+
+filename="python.org.json"
+d=0.85 #damping_factor
+iteration=50
 
 def parallel_pageRange(filename,iteration,d):
 
@@ -14,71 +23,56 @@ def parallel_pageRange(filename,iteration,d):
     my_RDD_dictionaries = my_RDD_strings.map(json.loads)
     # type(my_RDD_dictionaries) = <class 'pyspark.rdd.PipelinedRDD'>
     rdd=sc.parallelize(my_RDD_dictionaries.collect()[0])
-    rdd2=rdd.flatMap(proba_link)
-    //SOUTIRER L de rdd2
+    # for element in rdd.collect() :
+    #     print(element)
 
-    n=len(rdd.collect())
-    v_rdd=rdd.map(lambda x : {"id":x["id"],"url" : x['url'],"rank":1/n })
+    ranks = rdd.map(lambda x : (x['id'], 1.))
+    # ranks = sc.parallelize(link_data.keys()).map(lambda x : (x, 1.))
     
-    # POUR LE TEST
-    data=lire_data(filename)
-    L = initialize_L(data)
+    urls = rdd.map(lambda x : (x['id'], x['url']))
 
-    k=0
-    while (k< 5) :#iteration) :
-        v=[element['rank'] for element in v_rdd.collect()]
+    links=rdd.map(lambda x : (x['id'], x['neighbors']))
+    # links = sc.parallelize(link_data.items()).cache()
 
-        v_rdd=v_rdd.map(lambda x : {"id":x["id"],"url" : x['url'],"rank":pagerank(v,L[x["id"]],d,n)}) #v_rdd[i]_(i+1)=d*(L[i][:]*v_rdd_(i))+(1-d)/n
-        k+=1
 
-    final_rdd=v_rdd.sortBy(lambda x : x["rank"],ascending=False).map(lambda x : (x['url'],x["rank"]))
+    n=len(ranks.collect())
+    for i in range(iteration):
+        # compute contributions of each node where it links to
+        contribs = links.join(ranks).flatMap(calculProba)
 
-    print(final_rdd.collect()[:3])
+        # use a full outer join to make sure, that not well connected nodes aren't dropped
+        contribs = links.fullOuterJoin(contribs).mapValues(lambda x : x[1] or 0.0)
+
+        # Sum up all contributions per link
+        ranks = contribs.reduceByKey(add)
+
+        # Re-calculate URL ranks
+        ranks = ranks.mapValues(lambda rank: rank * d + (1-d))
+        
+    # Collects all URL ranks
+    resultat=ranks.join(urls).sortBy(lambda x : x[1],ascending=False).map(lambda x : (x[1][1] , x[1][0]/n))
+    print(resultat.collect()[:3])
 
     return 0
 
 
-def pagerank(v,Li,d,n):
-    produit_vect=0
-    for i in range(n):
-        produit_vect+=Li[i]*v[i]
+def calculProba(data):
+    """
+    This function takes elements from the joined dataset above and
+    computes the contribution to each outgoing link based on the
+    current rank.
+    """
+    _,(neighbors,rank) = data
+    nb_neighbors = len(neighbors)
+    for neighbor in neighbors:
+        yield neighbor, rank / nb_neighbors
 
-    return d*produit_vect+(1-d)/n
-
-def proba_link(data):
-    # transform data=('id','url','size',[neighbors]) into multiple ('id', 'neighbors','nombre de voisin')
-    print(data)
-    k=len(data["neighbors"])
-    rep=[]
-    for neighbor in data["neighbors"] :
-        rep.append( {   'id' : data['id'],
-                        # 'url' : data['url'],
-                        'neighbor' : neighbor,
-                        'proba' : 1/k })
-    return rep
+def somme(a,b):
+    return a+b
 
 
-def lire_data(filename):
-    with open("data/" + filename) as json_data:
-        data_dict = json.load(json_data)
-    return(data_dict)
-
-def initialize_L(data):
-    n=len(data)
-    L=[[ 0 for j in range(n)] for i in range(n)]
-    for i in range(n):
-        k_connection=len(data[i]["neighbors"])
-        for j in range(n):
-            if j in data[i]["neighbors"] :
-                L[j][i]=1/k_connection
-    return L
-
-
-filename="python.org.json"
-d=0.85 #damping_factor
-iteration=100
-
-parallel_pageRange(filename,iteration,d)
+res_par=parallel_pageRange(filename,iteration,d)
+# print(res_par[:3])
 
 
 
