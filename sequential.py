@@ -7,6 +7,7 @@ def lire_data(filename):
         data_dict = json.load(json_data)
     return(data_dict)
 
+#Define matrix of probability (Probability to go from one page to another page)
 def initialize_L(data):
     n=len(data)
     L=[[ 0 for j in range(n)] for i in range(n)]
@@ -17,21 +18,26 @@ def initialize_L(data):
                 L[j][i]=1/k_connection
     return L
 
+#iteration: Iteration before stoping, must be high enough for convergence
+#d: damping factor to reduce the impact of dead end
 def sequential_pageRank(filename,iteration,d):
     data=lire_data(filename)
 
     n = len(data)
     L = initialize_L(data)
-    r = [1 / n for i in range(n)]
+
+    #initialize probability to uniform distribution
+    probability = [1 / n for i in range(n)]
 
     k=0
     while (k<iteration) :
-        r=np.dot(L,r)*d+(1-d)
+        probability=np.dot(L,probability)*d+(1-d)
         k+=1
 
-    r2 = {data[i]["url"]: r[i] for i in range(n)}
+    #Associate url with their respective probability
+    r2 = {data[i]["url"]: probability[i] for i in range(n)}
 
-    # Trier le résultat
+    # Sort results
     sortedDict = sorted(r2.items(), key=lambda x: x[1], reverse=True)
 
     return sortedDict
