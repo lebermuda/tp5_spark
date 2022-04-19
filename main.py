@@ -5,7 +5,7 @@ import time
 
 
 if __name__ == '__main__':
-    filename="python.org.json" # "python.org.json"  "spark.apache.org.json"  "www.fsg.ulaval.ca.json"
+    filename="www.fsg.ulaval.ca.json" # "python.org.json"  "spark.apache.org.json"  "www.fsg.ulaval.ca.json"
 
     d=0.85 #damping_factor
     iteration=100
@@ -14,15 +14,17 @@ if __name__ == '__main__':
     time_seq_start=time.time()
     res_seq=sequential.sequential_pageRank(filename,iteration,d)
     time_seq_end = time.time()
-    print(res_seq[:3])
-    print("Time Seq : ",time_seq_end-time_seq_start," s")
+    # print(res_seq[:3])
+    # print("Time Seq : ",time_seq_end-time_seq_start," s")
 
     # PageRank Parallel
     time_par_start = time.time()
     res_par = parallel.parallel_pageRange(filename,iteration,d)
     time_par_end = time.time()
-    print(res_par[:3])
-    print("Time Seq : ", time_par_end - time_par_start, " s")
+    # print(res_par[:3])
+
+    print("Time Seq : ",time_seq_end-time_seq_start," s")
+    print("Time Par: ", time_par_end - time_par_start, " s")
 
 
 

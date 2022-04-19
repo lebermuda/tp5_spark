@@ -1,6 +1,7 @@
 #Page Rank sequential version
 
 #https://cocalc.com/share/public_paths/960fae18301f8e8cb29472dc3ff5d0acf5659ec8/data-analysis%2Fspark-pagerank.ipynb
+#/home/lebermuda/.local/lib/python3.8/site-packages/pyspark/bin/spark-submit main.py 
 
 
 import json
@@ -12,7 +13,11 @@ from pyspark import SparkContext
 
 def parallel_pageRange(filename,iteration,d):
 
-    sc = SparkContext("local", "First App")
+    conf = pyspark.SparkConf().setAll([('spark.executor.cores', '7')])
+    sc = pyspark.SparkContext(conf=conf)
+    
+    print(sc.defaultParallelism)
+    
     my_RDD_strings = sc.textFile("data/" + filename)
     # type(my_RDD_strings) = <class 'pyspark.rdd.RDD'>
     my_RDD_dictionaries = my_RDD_strings.map(json.loads)
@@ -20,17 +25,15 @@ def parallel_pageRange(filename,iteration,d):
     rdd=sc.parallelize(my_RDD_dictionaries.collect()[0])
     # for element in rdd.collect() :
     #     print(element)
+    n=len(rdd.collect())
 
-    ranks = rdd.map(lambda x : (x['id'], 1.))
-    # ranks = sc.parallelize(link_data.keys()).map(lambda x : (x, 1.))
+    ranks = rdd.map(lambda x : (x['id'], 1./n))
     
     urls = rdd.map(lambda x : (x['id'], x['url']))
 
     links=rdd.map(lambda x : (x['id'], x['neighbors']))
-    # links = sc.parallelize(link_data.items()).cache()
 
 
-    n=len(ranks.collect())
     for i in range(iteration):
         # compute contributions of each node where it links to
         contribs = links.join(ranks).flatMap(calculProba)
@@ -43,7 +46,7 @@ def parallel_pageRange(filename,iteration,d):
 
         # Re-calculate URL ranks
         ranks = ranks.mapValues(lambda rank: rank * d + (1-d))
-        
+
         # Reduce partition
         ranks = ranks.coalesce(sc.defaultParallelism)
 
@@ -57,11 +60,6 @@ def parallel_pageRange(filename,iteration,d):
 
 
 def calculProba(data):
-    """
-    This function takes elements from the joined dataset above and
-    computes the contribution to each outgoing link based on the
-    current rank.
-    """
     _,(neighbors,rank) = data
     nb_neighbors = len(neighbors)
     for neighbor in neighbors:

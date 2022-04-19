@@ -24,10 +24,8 @@ def sequential_pageRank(filename,iteration,d):
     L = initialize_L(data)
     r = [1 / n for i in range(n)]
 
-    k=0
-    while (k<iteration) :
+    for i in range(iteration) :
         r=np.dot(L,r)*d+(1-d)/n
-        k+=1
 
     r2 = {data[i]["url"]: r[i] for i in range(n)}
 

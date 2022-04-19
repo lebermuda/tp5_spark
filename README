@@ -1,0 +1,29 @@
+Result
+
+"python.org.json"
+
+('spark.executor.cores', '7')
+Time Seq :  44.13524270057678  s                                                
+Time Par :  69.18081569671631  s
+
+('spark.executor.cores', '1')
+Time Seq :  44.70612978935242  s
+Time Par :  68.51605868339539  s
+
+"spark.apache.org.json"
+('spark.executor.cores', '7')
+Time Seq :  27.675318002700806  s
+Time Par :  63.57911944389343  s
+
+('spark.executor.cores', '1')
+Time Seq :  28.36456608772278  s                                                
+Time Par :  63.579920053482056  s
+
+"www.fsg.ulaval.ca.json"
+('spark.executor.cores', '7')
+Time Seq :  96.143798828125  s                                                  
+Time Par :  70.67449951171875  s
+
+('spark.executor.cores', '1')
+Time Seq :  93.36126065254211  s
+Time Par:  69.62839984893799  s
