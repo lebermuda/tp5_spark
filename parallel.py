@@ -8,12 +8,7 @@ import numpy as np
 
 import pyspark
 from pyspark import SparkContext
-from operator import add
 
-
-filename="python.org.json"
-d=0.85 #damping_factor
-iteration=50
 
 def parallel_pageRange(filename,iteration,d):
 
@@ -44,16 +39,21 @@ def parallel_pageRange(filename,iteration,d):
         contribs = links.fullOuterJoin(contribs).mapValues(lambda x : x[1] or 0.0)
 
         # Sum up all contributions per link
-        ranks = contribs.reduceByKey(add)
+        ranks = contribs.reduceByKey(somme)
 
         # Re-calculate URL ranks
         ranks = ranks.mapValues(lambda rank: rank * d + (1-d))
         
+        # Reduce partition
+        ranks = ranks.coalesce(sc.defaultParallelism)
+
+        # Force evaluation
+        count = ranks.count()
+
     # Collects all URL ranks
     resultat=ranks.join(urls).sortBy(lambda x : x[1],ascending=False).map(lambda x : (x[1][1] , x[1][0]/n))
-    print(resultat.collect()[:3])
 
-    return 0
+    return resultat.collect()
 
 
 def calculProba(data):
@@ -70,8 +70,10 @@ def calculProba(data):
 def somme(a,b):
     return a+b
 
-
-res_par=parallel_pageRange(filename,iteration,d)
+# filename="python.org.json"
+# d=0.85 #damping_factor
+# iteration=50
+# res_par=parallel_pageRange(filename,iteration,d)
 # print(res_par[:3])
 
 
