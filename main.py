@@ -16,7 +16,6 @@ if __name__ == '__main__':
     res_seq=sequential.sequential_pageRank(filename,iteration,d)
     time_seq_end = time.time()
     print(res_seq[:3])
-    # print("Time Seq : ",time_seq_end-time_seq_start," s")
 
     # PageRank Parallel
     time_par_start = time.time()

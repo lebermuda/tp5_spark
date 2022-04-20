@@ -1,4 +1,3 @@
-#Page Rank sequential version
 import json
 import numpy as np
 
