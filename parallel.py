@@ -1,6 +1,5 @@
 #Page Rank sequential version
 
-#https://cocalc.com/share/public_paths/960fae18301f8e8cb29472dc3ff5d0acf5659ec8/data-analysis%2Fspark-pagerank.ipynb
 #/home/lebermuda/.local/lib/python3.8/site-packages/pyspark/bin/spark-submit main.py 
 
 
@@ -10,57 +9,10 @@ import numpy as np
 import pyspark
 from pyspark import SparkContext, SparkConf
 
-
-def parallel_pageRange(filename,iteration,d):
-
-    conf = pyspark.SparkConf().setAll([('spark.executor.cores', '7')])
-    sc = pyspark.SparkContext(conf=conf)
-    
-    print(sc.defaultParallelism)
-    
-    my_RDD_strings = sc.textFile("data/" + filename)
-    # type(my_RDD_strings) = <class 'pyspark.rdd.RDD'>
-    my_RDD_dictionaries = my_RDD_strings.map(json.loads)
-    # type(my_RDD_dictionaries) = <class 'pyspark.rdd.PipelinedRDD'>
-    rdd=sc.parallelize(my_RDD_dictionaries.collect()[0])
-    # for element in rdd.collect() :
-    #     print(element)
-    n=len(rdd.collect())
-
-    ranks = rdd.map(lambda x : (x['id'], 1./n))
-    
-    urls = rdd.map(lambda x : (x['id'], x['url']))
-
-    links=rdd.map(lambda x : (x['id'], x['neighbors']))
-
-
-    for i in range(iteration):
-        # compute contributions of each node where it links to
-        contribs = links.join(ranks).flatMap(calculProba)
-
-        # use a full outer join to make sure, that not well connected nodes aren't dropped
-        contribs = links.fullOuterJoin(contribs).mapValues(lambda x : x[1] or 0.0)
-
-        # Sum up all contributions per link
-        ranks = contribs.reduceByKey(somme)
-
-        # Re-calculate URL ranks
-        ranks = ranks.mapValues(lambda rank: rank * d + (1-d))
-
-        # Reduce partition
-        ranks = ranks.coalesce(sc.defaultParallelism)
-
-        # Force evaluation
-        count = ranks.count()
-
-    # Collects all URL ranks
-    resultat=ranks.join(urls).sortBy(lambda x : x[1],ascending=False).map(lambda x : (x[1][1] , x[1][0]/n))
-
-    return resultat.collect()
-
-def parallel_pageRank2(filename,iteration,d):
-    config = SparkConf().setMaster("local")
+def parallel_pageRank2(filename,iteration,d,p):
+    config = SparkConf().setMaster("local["+str(p)+"]")
     sc = SparkContext.getOrCreate(conf=config)
+    print(sc.defaultParallelism)
     my_RDD_strings = sc.textFile("data/" + filename)
     # type(my_RDD_strings) = <class 'pyspark.rdd.RDD'>
     my_RDD_dictionaries = my_RDD_strings.map(json.loads)

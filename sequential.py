@@ -30,7 +30,7 @@ def sequential_pageRank(filename,iteration,d):
     probability = [1 / n for i in range(n)]
 
     for i in range(iteration):
-        probability=np.dot(L,probability)*d+(1-d)/n
+        probability=np.dot(L,probability)*d+(1-d)
 
     #Associate url with their respective probability
     r2 = {data[i]["url"]: probability[i] for i in range(n)}

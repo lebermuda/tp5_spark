@@ -1,29 +1,43 @@
 Result
 
 "python.org.json"
+Time Seq :  44,453      42,474      43,635
 
-('spark.executor.cores', '7')
-Time Seq :  44.13524270057678  s                                                
-Time Par :  69.18081569671631  s
+p=1 Time Par:  38,150
 
-('spark.executor.cores', '1')
-Time Seq :  44.70612978935242  s
-Time Par :  68.51605868339539  s
+p=2 Time Par:  24,965
+
+p=4 Time Par:  35,727
+
+p=6 Time Par:  38,610
+
+p=8 Time Par:  41,206
+
 
 "spark.apache.org.json"
-('spark.executor.cores', '7')
-Time Seq :  27.675318002700806  s
-Time Par :  63.57911944389343  s
+Time Seq :  27,605      27,571    26,231   
 
-('spark.executor.cores', '1')
-Time Seq :  28.36456608772278  s                                                
-Time Par :  63.579920053482056  s
+p=1 Time Par:  25,132
+
+p=2 Time Par:  25,632
+
+p=4 Time Par:  29,189
+
+p=6 Time Par:  33,146
+
+p=8 Time Par:  37,089
+
 
 "www.fsg.ulaval.ca.json"
-('spark.executor.cores', '7')
-Time Seq :  96.143798828125  s                                                  
-Time Par :  70.67449951171875  s
+Time Seq :  89,683      94,633      91,850
 
-('spark.executor.cores', '1')
-Time Seq :  93.36126065254211  s
-Time Par:  69.62839984893799  s
+p=1 Time Par:  35,910
+
+p=2 Time Par:  26,131
+
+p=4 Time Par:  35,250
+
+p=6 Time Par:  38,848
+
+p=8 Time Par:  40,221
+
