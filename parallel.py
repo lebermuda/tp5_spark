@@ -8,7 +8,7 @@ import json
 import numpy as np
 
 import pyspark
-from pyspark import SparkContext
+from pyspark import SparkContext, SparkConf
 
 
 def parallel_pageRange(filename,iteration,d):
@@ -55,6 +55,33 @@ def parallel_pageRange(filename,iteration,d):
 
     # Collects all URL ranks
     resultat=ranks.join(urls).sortBy(lambda x : x[1],ascending=False).map(lambda x : (x[1][1] , x[1][0]/n))
+
+    return resultat.collect()
+
+def parallel_pageRank2(filename,iteration,d):
+    config = SparkConf().setMaster("local")
+    sc = SparkContext.getOrCreate(conf=config)
+    my_RDD_strings = sc.textFile("data/" + filename)
+    # type(my_RDD_strings) = <class 'pyspark.rdd.RDD'>
+    my_RDD_dictionaries = my_RDD_strings.map(json.loads)
+    # type(my_RDD_dictionaries) = <class 'pyspark.rdd.PipelinedRDD'>
+    rdd=sc.parallelize(my_RDD_dictionaries.collect()[0])
+
+    urls = rdd.map(lambda x : (x['id'], x['url']))
+    n = len(urls.collect())
+    ranks = rdd.map(lambda x : (x['id'], 1 / n))
+
+    links=rdd.map(lambda x : (x['id'], x['neighbors']))
+
+    for i in range(iteration):
+        contribs= links.join(ranks).flatMap(lambda x: [(i, [1 / len(x[1][0]) * x[1][1]]) for i in x[1][0]]).reduceByKey(lambda x,y : x + y)
+        ranks=contribs.mapValues(lambda x: sum(x)).mapValues(lambda x: x * d + (1-d)).coalesce(sc.defaultParallelism)
+
+        #force spark to eval to not get stackoverflow
+        if i % 10 == 0:
+            ranks.collect()
+
+    resultat=ranks.join(urls).sortBy(lambda x : x[1],ascending=False).map(lambda x : (x[1][1] , x[1][0]))
 
     return resultat.collect()
 

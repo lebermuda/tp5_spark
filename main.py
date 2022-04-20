@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
     # PageRank Parallel
     time_par_start = time.time()
-    res_par = parallel.parallel_pageRange(filename,iteration,d)
+    res_par = parallel.parallel_pageRank2(filename,iteration,d)
     time_par_end = time.time()
     # print(res_par[:3])
 
